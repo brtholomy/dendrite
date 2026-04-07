@@ -17,6 +17,8 @@
 
 (defvar-local tsm/-overlays (make-hash-table :test #'eq))
 
+(defvar tsm-highlight-face nil "highlight face for overlays")
+
 (defun tsm/-find-overlay-at-point (point)
   "Find any overlay in tsm/-overlays containing POINT."
   (seq-find (lambda (o) (gethash o tsm/-overlays)) (overlays-at point)))
@@ -24,11 +26,11 @@
 (defun tsm/-overlay-at-node (node)
   "Create overlay of NODE and add to `tsm/-overlays'"
   (let ((overlay (make-overlay (treesit-node-start node) (treesit-node-end node))))
-    (overlay-put overlay 'face 'lazy-highlight)
+    (when (bound-and-true-p tsm-highlight-face) (overlay-put overlay 'face 'tsm-highlight-face))
     (overlay-put overlay 'evaporate t)
     (overlay-put overlay 'node node)
-    ; Emacs documentation says integer must be nonnegative, but -1 seems to work...
-    ; (i.e. puts it below multiple-cursors region overlay)
+    ;; Emacs documentation says integer must be nonnegative, but -1 seems to work...
+    ;; (i.e. puts it below multiple-cursors region overlay)
     (overlay-put overlay 'priority '(nil . -1))
     (puthash overlay overlay tsm/-overlays)
     overlay))
